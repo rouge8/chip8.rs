@@ -44,6 +44,7 @@ impl CPU {
                     2 => self.and_xy(x, y),
                     3 => self.xor_xy(x, y),
                     4 => self.add_xy(x, y),
+                    5 => self.sub_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
                 },
                 _ => todo!("opcode: {:04x}", opcode),
@@ -172,6 +173,23 @@ impl CPU {
             self.registers[0xF] = 0;
         }
     }
+
+    /// Set `Vx = Vx - Vy`, set `VF = NOT borrow`.
+    ///
+    /// If `Vx > Vy`, then `VF` is set to 1, otherwise 0. Then `Vy` is subtracted from `Vx`, and
+    /// the results stored in `Vx`.
+    fn sub_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        if x_ > y_ {
+            self.registers[0xF] = 1;
+        } else {
+            self.registers[0xF] = 0;
+        }
+
+        self.registers[x as usize] = x_ - y_;
+    }
 }
 
 fn main() {
@@ -185,6 +203,7 @@ fn main() {
 
     cpu.registers[0] = 5;
     cpu.registers[1] = 10;
+    cpu.registers[2] = 7;
 
     let mem = &mut cpu.memory;
 
@@ -196,9 +215,13 @@ fn main() {
     mem[0x002] = 0x21;
     mem[0x003] = 0x00;
 
+    // SUB register 3's value from register 1
+    mem[0x004] = 0x80;
+    mem[0x005] = 0x25;
+
     // HALT
-    mem[0x004] = 0x00;
-    mem[0x005] = 0x00;
+    mem[0x006] = 0x00;
+    mem[0x007] = 0x00;
 
     // ADD register 1's value to register 0
     mem[0x100] = 0x80;
@@ -214,7 +237,7 @@ fn main() {
 
     cpu.run();
 
-    assert_eq!(cpu.registers[0], 45);
+    assert_eq!(cpu.registers[0], 38);
 
-    println!("5 + (10 * 2) + (10 * 2) = {}", cpu.registers[0]);
+    println!("5 + (10 * 2) + (10 * 2) - 7 = {}", cpu.registers[0]);
 }
