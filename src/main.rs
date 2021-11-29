@@ -43,6 +43,10 @@ impl CPU {
         }
     }
 
+    /// Return from a subroutine.
+    ///
+    /// The interpreter sets the program counter to the address at the top of the stack, then
+    /// subtracts 1 from the stack pointer.
     fn ret(&mut self) {
         if self.stack_pointer == 0 {
             panic!("Stack underflow");
@@ -53,10 +57,17 @@ impl CPU {
         self.position_in_memory = addr as usize;
     }
 
+    /// Jump to location `nnn`.
+    ///
+    /// The interpreter sets the program counter to `nnn`.
     fn jmp(&mut self, addr: u16) {
         self.position_in_memory = addr as usize;
     }
 
+    /// Call subroutine at `nnn`.
+    ///
+    /// The interpreter increments the stack pointer, then puts the current PC on the top of the
+    /// stack. The PC is then set to `nnn`.
     fn call(&mut self, addr: u16) {
         let sp = self.stack_pointer;
         let stack = &mut self.stack;
@@ -80,6 +91,11 @@ impl CPU {
         }
     }
 
+    /// Set `Vx = Vx + Vy`, set `VF = carry`.
+    ///
+    /// The values of `Vx` and `Vy` are added together. If the result is greater than 8 bits
+    /// (i.e., > 255,) `VF` is set to 1, otherwise 0. Only the lowest 8 bits of the result are
+    /// kept, and stored in `Vx`.
     fn add_xy(&mut self, x: u8, y: u8) {
         let arg1 = self.registers[x as usize];
         let arg2 = self.registers[y as usize];
