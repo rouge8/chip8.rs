@@ -35,6 +35,7 @@ impl CPU {
                 0x2000..=0x2FFF => self.call(addr),
                 0x3000..=0x3FFF => self.se(x, kk),
                 0x4000..=0x4FFF => self.sne(x, kk),
+                0x5000..=0x5FFF => self.se(x, y), // Skip next instruction if `Vx = Vy`.
                 0x8000..=0x8FFF => match op_minor {
                     4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
