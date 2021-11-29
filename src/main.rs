@@ -39,6 +39,10 @@ impl CPU {
                 0x6000..=0x6FFF => self.ld(x, kk),
                 0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
+                    0 => self.ld(x, self.registers[y as usize]),
+                    1 => self.or_xy(x, y),
+                    2 => self.and_xy(x, y),
+                    3 => self.xor_xy(x, y),
                     4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
                 },
@@ -117,6 +121,37 @@ impl CPU {
     /// Adds the value `kk` to the value of register `Vx`, then stores the result in `Vx`.
     fn add(&mut self, vx: u8, kk: u8) {
         self.registers[vx as usize] += kk;
+    }
+
+    /// Set `Vx = Vx OR Vy`.
+    ///
+    /// Performs a bitwise OR on the values of `Vx` and `Vy`, then stores the result in `Vx`.
+    fn or_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ | y_;
+    }
+
+    /// Set `Vx = Vx AND Vy`.
+    ///
+    /// Performs a bitwise AND on the values of `Vx` and `Vy`, then stores the result in `Vx`.
+    fn and_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ & y_;
+    }
+
+    /// Set `Vx = Vx XOR Vy`.
+    ///
+    /// Performs a bitwise exclusive OR on the values of `Vx` and `Vy`, then stores the result in
+    /// `Vx`.
+    fn xor_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ ^ y_;
     }
 
     /// Set `Vx = Vx + Vy`, set `VF = carry`.
