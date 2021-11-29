@@ -33,6 +33,7 @@ impl CPU {
                 0x00EE => self.ret(),
                 0x1000..=0x1FFF => self.jmp(addr),
                 0x2000..=0x2FFF => self.call(addr),
+                0x3000..=0x3FFF => self.se(x, kk),
                 0x8000..=0x8FFF => match op_minor {
                     4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
@@ -67,6 +68,16 @@ impl CPU {
         stack[sp] = self.position_in_memory as u16;
         self.stack_pointer += 1;
         self.position_in_memory = addr as usize;
+    }
+
+    /// Skip next instruction if `Vx = kk`.
+    ///
+    /// The interpreter compares register `Vx` to `kk`, and if they are equal, increments the
+    /// program counter by 2.
+    fn se(&mut self, vx: u8, kk: u8) {
+        if vx == kk {
+            self.position_in_memory += 2;
+        }
     }
 
     fn add_xy(&mut self, x: u8, y: u8) {
