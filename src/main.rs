@@ -36,6 +36,7 @@ impl CPU {
                 0x3000..=0x3FFF => self.se(x, kk),
                 0x4000..=0x4FFF => self.sne(x, kk),
                 0x5000..=0x5FFF => self.se(x, y), // Skip next instruction if `Vx = Vy`.
+                0x6000..=0x6FFF => self.ld(x, kk),
                 0x8000..=0x8FFF => match op_minor {
                     4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
@@ -101,6 +102,13 @@ impl CPU {
         if vx != kk {
             self.position_in_memory += 2;
         }
+    }
+
+    /// Set `Vx = kk`.
+    ///
+    /// The interpreter puts the value `kk` into register `Vx`.
+    fn ld(&mut self, vx: u8, kk: u8) {
+        self.registers[vx as usize] = kk;
     }
 
     /// Set `Vx = Vx + Vy`, set `VF = carry`.
